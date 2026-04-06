@@ -1,23 +1,24 @@
-import { useAppStore } from "@/store/useAppStore";
-import { Stack, router } from "expo-router";
-import { useEffect } from "react";
+import { Slot, router } from "expo-router";
+import { useEffect, useState } from "react";
+import { useAppStore } from "../store/useAppStore";
 
 export default function RootLayout() {
   const hasCompletedOnboarding = useAppStore((s) => s.hasCompletedOnboarding);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Redirect based on onboarding state
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     if (hasCompletedOnboarding) {
       router.replace("/(tabs)");
     } else {
       router.replace("/onboarding");
     }
-  }, [hasCompletedOnboarding]);
+  }, [mounted, hasCompletedOnboarding]);
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="onboarding" />
-      <Stack.Screen name="(tabs)" />
-    </Stack>
-  );
+  return <Slot />;
 }
