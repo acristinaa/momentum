@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Habit } from "../../types";
-import { isCompletedToday } from "../../utils/habitUtils";
+import { Habit } from "../types";
+import { isCompletedToday } from "../utils/habitUtils";
 
 interface HabitCardProps {
   habit: Habit;
