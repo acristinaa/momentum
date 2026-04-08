@@ -14,17 +14,14 @@ import {
   View,
 } from "react-native";
 
-// Types
 interface HabitInput {
   id: string;
   title: string;
 }
 
-// Constants
-const MAX_HABITS = 3;
+const MAX_HABITS = 3; // for now
 const TOTAL_STEPS = 3;
 
-// Main Screen
 export default function OnboardingScreen() {
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
 
@@ -33,7 +30,6 @@ export default function OnboardingScreen() {
   const [habits, setHabits] = useState<HabitInput[]>([]);
   const [habitInput, setHabitInput] = useState("");
 
-  // Step 1 Handlers
   function handleNextFromStep1() {
     if (!plantName.trim()) {
       Alert.alert("Give your plant a name!", "It needs an identity 🌱");
@@ -42,7 +38,6 @@ export default function OnboardingScreen() {
     setStep(1);
   }
 
-  // Step 2 Handlers
   function handleAddHabit() {
     if (!habitInput.trim()) return;
     if (habits.length >= MAX_HABITS) return;
@@ -66,18 +61,14 @@ export default function OnboardingScreen() {
     setStep(2);
   }
 
-  // Step 3 Handler
   function handleFinish() {
     completeOnboarding(
       plantName.trim(),
       habits.map((h) => ({ title: h.title })),
     );
-    // _layout.tsx will automatically redirect to tabs
-    // when hasCompletedOnboarding becomes true
     router.replace("/(tabs)");
   }
 
-  // Render
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
@@ -118,7 +109,6 @@ export default function OnboardingScreen() {
   );
 }
 
-// Step 1: Name Your Plant
 interface Step1Props {
   plantName: string;
   onChangeName: (name: string) => void;
@@ -154,7 +144,6 @@ function Step1({ plantName, onChangeName, onNext }: Step1Props) {
   );
 }
 
-// Step 2: Add Habits
 interface Step2Props {
   habits: HabitInput[];
   habitInput: string;
@@ -182,7 +171,6 @@ function Step2({
         Add up to 3 habits you want to build. Keep them simple and achievable.
       </Text>
 
-      {/* Habit input row */}
       {canAddMore && (
         <View style={styles.inputRow}>
           <TextInput
@@ -201,7 +189,6 @@ function Step2({
         </View>
       )}
 
-      {/* Habit list */}
       {habits.map((h) => (
         <View key={h.id} style={styles.habitRow}>
           <Text style={styles.habitBullet}>🌿</Text>
@@ -223,7 +210,6 @@ function Step2({
   );
 }
 
-// Step 3: Summary
 interface Step3Props {
   plantName: string;
   habits: HabitInput[];
@@ -240,7 +226,6 @@ function Step3({ plantName, habits, onFinish }: Step3Props) {
         grow with you.
       </Text>
 
-      {/* Summary card */}
       <View style={styles.summaryCard}>
         <Text style={styles.summaryTitle}>Your habits:</Text>
         {habits.map((h) => (
@@ -261,7 +246,6 @@ function Step3({ plantName, habits, onFinish }: Step3Props) {
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
