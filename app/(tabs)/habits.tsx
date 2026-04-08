@@ -4,13 +4,13 @@ import { isCompletedToday } from "@/utils/habitUtils";
 import React, { useState } from "react";
 import {
   Alert,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppStore } from "../../store/useAppStore";
 
 const MAX_HABITS = 3;

@@ -1,5 +1,6 @@
 import { Slot, router } from "expo-router";
 import { useEffect, useState } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context"; // ← add
 import { useAppStore } from "../store/useAppStore";
 
 export default function RootLayout() {
@@ -12,7 +13,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!mounted) return;
-
     if (hasCompletedOnboarding) {
       router.replace("/(tabs)");
     } else {
@@ -20,5 +20,9 @@ export default function RootLayout() {
     }
   }, [mounted, hasCompletedOnboarding]);
 
-  return <Slot />;
+  return (
+    <SafeAreaProvider>
+      <Slot />
+    </SafeAreaProvider>
+  );
 }

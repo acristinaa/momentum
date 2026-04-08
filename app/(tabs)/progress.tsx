@@ -6,7 +6,6 @@ import { countCompletedToday } from "@/utils/habitUtils";
 import { getStageName } from "@/utils/plantUtils";
 import React, { useMemo } from "react";
 import {
-  SafeAreaView,
   ScrollView,
   Share,
   StyleSheet,
@@ -14,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppStore } from "../../store/useAppStore";
 
 const STAGE_THRESHOLDS = {
