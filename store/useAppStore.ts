@@ -1,11 +1,12 @@
+// src/store/useAppStore.ts
 import { create } from "zustand";
+import { clearAppData, saveAppData } from "../services/storage";
 import { AppData, Habit, Plant } from "../types";
 import { getTodayString } from "../utils/dateUtils";
 import { calculateTodayPoints, isCompletedToday } from "../utils/habitUtils";
 import { awardExperience } from "../utils/plantUtils";
 
 interface AppStore extends AppData {
-  // Onboarding
   completeOnboarding: (
     plantName: string,
     habits: Omit<Habit, "id" | "createdAt" | "completedDates">[],
@@ -32,7 +33,6 @@ interface AppStore extends AppData {
   handleAppForeground: () => void;
 }
 
-// Default state for a brand new user
 const defaultState: AppData = {
   habits: [],
   plant: { name: "", stage: 1, experience: 0 },
@@ -42,10 +42,20 @@ const defaultState: AppData = {
   hasCompletedOnboarding: false,
 };
 
+function extractAppData(state: AppStore): AppData {
+  return {
+    habits: state.habits,
+    plant: state.plant,
+    lastOpenedDate: state.lastOpenedDate,
+    reminderEnabled: state.reminderEnabled,
+    reminderTime: state.reminderTime,
+    hasCompletedOnboarding: state.hasCompletedOnboarding,
+  };
+}
+
 export const useAppStore = create<AppStore>((set, get) => ({
   ...defaultState,
 
-  // Onboarding
   completeOnboarding: (plantName, habitInputs) => {
     const today = getTodayString();
     const habits: Habit[] = habitInputs.map((h, i) => ({
@@ -55,18 +65,19 @@ export const useAppStore = create<AppStore>((set, get) => ({
       completedDates: [],
     }));
 
-    set({
+    const next: Partial<AppData> = {
       plant: { name: plantName, stage: 1, experience: 0 },
       habits,
       hasCompletedOnboarding: true,
       lastOpenedDate: today,
-    });
+    };
+
+    set(next);
+    saveAppData(extractAppData({ ...get(), ...next }));
   },
 
-  // Habits
   addHabit: (title) => {
     const { habits } = get();
-    // Max 3 habits enforced here
     if (habits.length >= 3) return;
 
     const newHabit: Habit = {
@@ -76,43 +87,49 @@ export const useAppStore = create<AppStore>((set, get) => ({
       completedDates: [],
     };
 
-    set({ habits: [...habits, newHabit] });
+    const next = { habits: [...habits, newHabit] };
+    set(next);
+    saveAppData(extractAppData({ ...get(), ...next }));
   },
 
   editHabit: (id, title) => {
-    set((state) => ({
-      habits: state.habits.map((h) => (h.id === id ? { ...h, title } : h)),
-    }));
+    set((state) => {
+      const next = {
+        habits: state.habits.map((h) => (h.id === id ? { ...h, title } : h)),
+      };
+      saveAppData(extractAppData({ ...state, ...next }));
+      return next;
+    });
   },
 
   deleteHabit: (id) => {
-    set((state) => ({
-      habits: state.habits.filter((h) => h.id !== id),
-    }));
+    set((state) => {
+      const next = {
+        habits: state.habits.filter((h) => h.id !== id),
+      };
+      saveAppData(extractAppData({ ...state, ...next }));
+      return next;
+    });
   },
 
   toggleHabitCompletion: (id) => {
     const { habits, plant } = get();
     const today = getTodayString();
 
-    // Was this habit already done today?
     const habit = habits.find((h) => h.id === id);
     if (!habit) return;
     const alreadyDone = isCompletedToday(habit);
 
-    // Update the habit's completedDates
     const updatedHabits = habits.map((h) => {
       if (h.id !== id) return h;
       return {
         ...h,
         completedDates: alreadyDone
-          ? h.completedDates.filter((d) => d !== today) // un-complete
-          : [...h.completedDates, today], // complete
+          ? h.completedDates.filter((d) => d !== today)
+          : [...h.completedDates, today],
       };
     });
 
-    // Recalculate points only when completing (not un-completing)
-    // We track XP cumulatively — only award new points
     const pointsBefore = calculateTodayPoints(habits);
     const pointsAfter = calculateTodayPoints(updatedHabits);
     const pointsDelta = pointsAfter - pointsBefore;
@@ -120,26 +137,43 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const updatedPlant =
       pointsDelta > 0 ? awardExperience(plant, pointsDelta) : plant;
 
-    set({ habits: updatedHabits, plant: updatedPlant });
+    const next = { habits: updatedHabits, plant: updatedPlant };
+    set(next);
+    saveAppData(extractAppData({ ...get(), ...next }));
   },
 
-  // Plant
-  updatePlant: (plant) => set({ plant }),
+  updatePlant: (plant) => {
+    set({ plant });
+    saveAppData(extractAppData({ ...get(), plant }));
+  },
 
-  // Settings
-  setReminderEnabled: (enabled) => set({ reminderEnabled: enabled }),
-  setReminderTime: (time) => set({ reminderTime: time }),
+  setReminderEnabled: (enabled) => {
+    set({ reminderEnabled: enabled });
+    saveAppData(extractAppData({ ...get(), reminderEnabled: enabled }));
+  },
 
-  // Persistence
-  // Called once on app start to hydrate state from AsyncStorage
-  loadFromStorage: (data) => set({ ...data }),
+  setReminderTime: (time) => {
+    set({ reminderTime: time });
+    saveAppData(extractAppData({ ...get(), reminderTime: time }));
+  },
 
-  resetAll: () => set({ ...defaultState }),
+  loadFromStorage: (data) => {
+    set({ ...data });
+  },
 
-  // Lifecycle
+  resetAll: () => {
+    set({ ...defaultState });
+    // wipe AsyncStorage so next launch starts fresh
+    clearAppData();
+  },
+
   handleAppForeground: () => {
     const today = getTodayString();
-    set({ lastOpenedDate: today });
-    // Daily reset logic lives in useDailyReset hook
+    const current = get();
+    if (current.lastOpenedDate !== today) {
+      const next = { lastOpenedDate: today };
+      set(next);
+      saveAppData(extractAppData({ ...current, ...next }));
+    }
   },
 }));
