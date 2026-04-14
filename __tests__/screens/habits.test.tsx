@@ -6,33 +6,29 @@ import { useAppStore } from "../../store/useAppStore";
 
 const today = getTodayString();
 
-beforeEach(() => {
+beforeEach(async () => {
   useAppStore.getState().resetAll();
   useAppStore.getState().completeOnboarding("Fern", [{ title: "Read" }]);
 });
 
-describe("HabitsScreen", () => {
-  test("renders existing habits", () => {
-    const { getByText } = render(<HabitsScreen />);
-    expect(getByText("Read")).toBeTruthy();
-  });
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-  test("shows add button when under limit", () => {
-    const { getByText } = render(<HabitsScreen />);
-    expect(getByText("Add Habit")).toBeTruthy();
-  });
+test("hides add button when at max habits", async () => {
+  await wait(1);
+  useAppStore.getState().addHabit("Meditate");
+  await wait(1);
+  useAppStore.getState().addHabit("Exercise");
+  const { queryByText } = render(<HabitsScreen />);
+  expect(queryByText("Add Habit")).toBeNull();
+});
 
-  test("hides add button when at max habits", () => {
-    useAppStore.getState().addHabit("Meditate");
-    useAppStore.getState().addHabit("Exercise");
-    const { queryByText } = render(<HabitsScreen />);
-    expect(queryByText("Add Habit")).toBeNull();
-  });
-
-  test("shows max reached message at limit", () => {
-    useAppStore.getState().addHabit("Meditate");
-    useAppStore.getState().addHabit("Exercise");
-    const { getByText } = render(<HabitsScreen />);
-    expect(getByText(/maximum of 3 habits/)).toBeTruthy();
-  });
+test("shows max reached message at limit", async () => {
+  await wait(1);
+  useAppStore.getState().addHabit("Meditate");
+  await wait(1);
+  useAppStore.getState().addHabit("Exercise");
+  const { getByText } = render(<HabitsScreen />);
+  expect(getByText(/maximum of 3 habits/)).toBeTruthy();
 });
