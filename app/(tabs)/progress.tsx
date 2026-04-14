@@ -1,13 +1,12 @@
 import { CalendarStrip } from "@/components/CalendarStrip";
 import { PlantDisplay } from "@/components/PlantDisplay";
 import { ProgressBar } from "@/components/PorgressBar";
+import { shareProgress } from "@/services/sharing";
 import { calculateStreak } from "@/utils/dateUtils";
 import { countCompletedToday } from "@/utils/habitUtils";
-import { getStageName } from "@/utils/plantUtils";
 import React, { useMemo } from "react";
 import {
   ScrollView,
-  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -50,18 +49,7 @@ export default function ProgressScreen() {
   const xpNeeded = stageConfig.max - xpForCurrentStage;
 
   async function handleShare() {
-    try {
-      await Share.share({
-        message:
-          `🌱 My plant "${plant.name}" is at stage ${plant.stage} (${getStageName(plant.stage)}) in Momentum!\n\n` +
-          `🔥 ${streak} day streak\n` +
-          `✅ ${totalDaysActive} total active days\n` +
-          `⭐ ${plant.experience} XP earned\n\n` +
-          `Building habits, one day at a time. 💪`,
-      });
-    } catch (error) {
-      // User cancelled share, no action needed
-    }
+    await shareProgress(plant, habits);
   }
 
   return (
