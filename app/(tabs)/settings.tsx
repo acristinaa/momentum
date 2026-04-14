@@ -1,4 +1,9 @@
 import { SettingsRow } from "@/components/SettingsRow";
+import {
+  cancelDailyReminder,
+  requestNotificationPermission,
+  scheduleDailyReminder,
+} from "@/services/notifications";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -61,13 +66,39 @@ export default function SettingsScreen() {
 
   const [timePickerVisible, setTimePickerVisible] = useState(false);
 
-  function handleReminderToggle(enabled: boolean) {
-    setReminderEnabled(enabled);
+  async function handleReminderToggle(enabled: boolean) {
+    if (enabled) {
+      // Ask for permission before enabling
+      const granted = await requestNotificationPermission();
+
+      if (!granted) {
+        Alert.alert(
+          "Permission Required",
+          "Please enable notifications in your device settings to use reminders.",
+          [{ text: "OK" }],
+        );
+        return; // Don't toggle on if permission denied
+      }
+
+      // Schedule the notification at the current reminder time
+      await scheduleDailyReminder(reminderTime);
+      setReminderEnabled(true);
+    } else {
+      // Cancel any scheduled notification
+      await cancelDailyReminder();
+      setReminderEnabled(false);
+    }
   }
 
-  function handleTimeSelect(time: string) {
+  // Replace the existing handleTimeSelect inside TimePicker usage
+  async function handleTimeSelect(time: string) {
     setReminderTime(time);
     setTimePickerVisible(false);
+
+    // If reminders are on, reschedule at the new time immediately
+    if (reminderEnabled) {
+      await scheduleDailyReminder(time);
+    }
   }
 
   function handleResetPress() {
