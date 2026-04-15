@@ -2,6 +2,7 @@
 
 A mobile habit tracker where your consistency grows a virtual plant.
 Built with React Native, Expo, and TypeScript.
+This is a prototype only, currently in development.
 
 ---
 
