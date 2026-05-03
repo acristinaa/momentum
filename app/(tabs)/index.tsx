@@ -33,7 +33,7 @@ export default function HomeScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={["left", "right"]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}

@@ -1,4 +1,3 @@
-import { CalendarStrip } from "@/components/CalendarStrip";
 import { PlantDisplay } from "@/components/PlantDisplay";
 import { ProgressBar } from "@/components/PorgressBar";
 import { shareProgress } from "@/services/sharing";
@@ -53,7 +52,7 @@ export default function ProgressScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={["left", "right"]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -113,10 +112,6 @@ export default function ProgressScreen() {
                   : `${completedToday} of ${habits.length} habits done`}
             </Text>
           </View>
-        </View>
-
-        <View style={styles.card}>
-          <CalendarStrip completedDates={allCompletedDates} />
         </View>
 
         <TouchableOpacity style={styles.shareButton} onPress={handleShare}>

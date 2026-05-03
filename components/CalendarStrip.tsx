@@ -10,18 +10,18 @@ export function CalendarStrip({ completedDates }: CalendarStripProps) {
   const days = buildLast14Days();
   const completedSet = new Set(completedDates.map((d) => d.split("T")[0]));
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Last 14 Days</Text>
+  const firstWeek = days.slice(0, 7);
+  const secondWeek = days.slice(7, 14);
+
+  function renderRow(week: typeof days) {
+    return (
       <View style={styles.grid}>
-        {days.map((day) => {
+        {week.map((day) => {
           const isCompleted = completedSet.has(day.dateString);
           const isToday = day.dateString === getTodayString();
-
           return (
             <View key={day.dateString} style={styles.dayColumn}>
               <Text style={styles.dayLabel}>{day.shortLabel}</Text>
-
               <View
                 style={[
                   styles.dot,
@@ -30,7 +30,6 @@ export function CalendarStrip({ completedDates }: CalendarStripProps) {
                 ]}>
                 {isCompleted && <Text style={styles.dotCheck}>✓</Text>}
               </View>
-
               <Text
                 style={[styles.dateNumber, isToday && styles.dateNumberToday]}>
                 {day.dayNumber}
@@ -39,6 +38,14 @@ export function CalendarStrip({ completedDates }: CalendarStripProps) {
           );
         })}
       </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Last 14 Days</Text>
+      {renderRow(firstWeek)}
+      {renderRow(secondWeek)}
     </View>
   );
 }
@@ -69,7 +76,7 @@ function buildLast14Days(): DayInfo[] {
 
 const styles = StyleSheet.create({
   container: {
-    gap: 12,
+    gap: 10,
   },
   title: {
     fontSize: 14,
@@ -81,6 +88,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   dayColumn: {
+    width: "14.28%",
     alignItems: "center",
     gap: 4,
   },
@@ -90,9 +98,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   dot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: "#F5F5F5",
     alignItems: "center",
     justifyContent: "center",

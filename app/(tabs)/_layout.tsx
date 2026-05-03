@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { TouchableOpacity } from "react-native";
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -17,7 +18,25 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: "#FFFFFF",
+          borderBottomWidth: 1,
+          borderBottomColor: "#F0F0F0",
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        headerTitleStyle: {
+          fontSize: 22,
+          fontWeight: "700",
+          color: "#212121",
+        },
+        headerTitleAlign: "left",
+        headerRight: () => (
+          <TouchableOpacity style={{ marginRight: 16 }}>
+            <Ionicons name="person-circle-outline" size={28} color="#212121" />
+          </TouchableOpacity>
+        ),
         tabBarActiveTintColor: "#4CAF50",
         tabBarInactiveTintColor: "#9E9E9E",
         tabBarStyle: {

@@ -192,7 +192,15 @@ interface AppData {
 }
 ```
 
----
+## Technical Decisions
+
+### State management: Zustand over Redux or React Context
+
+React Context triggers full subtree re-renders on every state change — on mobile that means dropped frames when a habit toggle updates XP, streak, and plant stage at once. Redux handles this better but adds ~40KB of boilerplate for a dataset this small. Zustand's selector-based subscriptions mean each component re-renders only when its specific slice of state changes, at ~1.1KB gzipped.
+
+### Persistence: AsyncStorage and its limits
+
+AsyncStorage stores all data as a single serialised JSON blob. This is fine for Momentum's small dataset (3 habits, one plant) but would not scale: there is no querying (filtering requires loading and parsing the whole blob), no partial updates (changing one habit rewrites the entire object), and Android caps values at ~6MB by default. For a larger app — multiple users, months of history, or relational data between habits and completions — `expo-sqlite` or Realm would be the right choice.
 
 ## Future Improvements
 
